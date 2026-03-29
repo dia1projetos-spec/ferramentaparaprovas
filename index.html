@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerador de Provas – Colégio Ilha Brasil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- PDF export libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ========== PAINEL LATERAL DE EDIÇÃO ========== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="assets/logo_ilha.png" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
+    <h1 class="sidebar-title">Gerador<br><span>de Provas</span></h1>
+  </div>
+
+  <!-- Informações da Prova -->
+  <section class="sidebar-section">
+    <h2 class="section-label">📋 Informações da Prova</h2>
+    <div class="form-group">
+      <label>Disciplina</label>
+      <input type="text" id="inp-disciplina" placeholder="Ex: Matemática" />
+    </div>
+    <div class="form-group">
+      <label>Período</label>
+      <input type="text" id="inp-periodo" placeholder="Ex: 1º Bimestre 2025" />
+    </div>
+    <div class="form-group">
+      <label>Valor Total</label>
+      <input type="text" id="inp-valor" placeholder="Ex: 10,0 pontos" />
+    </div>
+  </section>
+
+  <!-- Adicionar Questão -->
+  <section class="sidebar-section">
+    <h2 class="section-label">✏️ Nova Questão</h2>
+    <div class="form-group">
+      <label>Tipo</label>
+      <div class="tipo-toggle">
+        <button class="tipo-btn active" id="btn-multipla" onclick="setTipo('multipla')">Múltipla Escolha</button>
+        <button class="tipo-btn" id="btn-dissertativa" onclick="setTipo('dissertativa')">Dissertativa</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Enunciado</label>
+      <textarea id="inp-enunciado" rows="3" placeholder="Digite o enunciado da questão..."></textarea>
+    </div>
+
+    <!-- Alternativas (múltipla escolha) -->
+    <div id="alternativas-box">
+      <label class="form-label-sm">Alternativas</label>
+      <div class="alt-row"><span class="alt-letra">A)</span><input type="text" class="alt-input" id="alt-a" placeholder="Alternativa A"/></div>
+      <div class="alt-row"><span class="alt-letra">B)</span><input type="text" class="alt-input" id="alt-b" placeholder="Alternativa B"/></div>
+      <div class="alt-row"><span class="alt-letra">C)</span><input type="text" class="alt-input" id="alt-c" placeholder="Alternativa C"/></div>
+      <div class="alt-row"><span class="alt-letra">D)</span><input type="text" class="alt-input" id="alt-d" placeholder="Alternativa D"/></div>
+      <div class="alt-row"><span class="alt-letra">E)</span><input type="text" class="alt-input" id="alt-e" placeholder="Alternativa E (opcional)"/></div>
+    </div>
+
+    <!-- Linhas dissertativa -->
+    <div id="linhas-box" style="display:none;">
+      <label class="form-label-sm">Linhas para resposta</label>
+      <div class="linhas-counter">
+        <button onclick="changeLinhas(-1)">−</button>
+        <span id="linhas-count">6</span>
+        <button onclick="changeLinhas(1)">+</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Valor da questão</label>
+      <input type="text" id="inp-q-valor" placeholder="Ex: 1,0" />
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-salvar" id="btn-add-questao" onclick="addOuEditarQuestao()">➕ Adicionar Questão</button>
+    </div>
+  </section>
+
+  <!-- Lista de questões -->
+  <section class="sidebar-section">
+    <h2 class="section-label">📝 Questões (<span id="total-questoes">0</span>)</h2>
+    <div id="lista-questoes"></div>
+  </section>
+
+  <!-- Exportar -->
+  <section class="sidebar-section">
+    <button class="btn-export" onclick="exportarPDF()">⬇️ Exportar PDF</button>
+  </section>
+</aside>
+
+<!-- Botão mobile toggle -->
+<button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+<!-- ========== ÁREA DE PREVIEW ========== -->
+<main class="preview-area" id="preview-area">
+  <div class="preview-label">Pré-visualização da Prova</div>
+  <div id="folhas-container"></div>
+</main>
+
+<!-- Modal edição -->
+<div class="modal-overlay" id="modal-overlay" onclick="fecharModal()"></div>
+<div class="modal" id="modal-edicao">
+  <h3>Editar Questão</h3>
+  <p class="modal-info">Use o painel lateral para editar. A questão selecionada está destacada.</p>
+  <button class="btn-salvar" onclick="fecharModal()">Fechar</button>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
