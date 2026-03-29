@@ -550,45 +550,44 @@ body { display: flex; }
   body { flex-direction: column; }
 
   .sidebar {
-    width: 100%;
-    height: auto;
+    width: 88vw;
+    max-width: 360px;
+    height: 100vh;
     min-width: unset;
     position: fixed;
     top: 0; left: 0;
     transform: translateX(-110%);
     z-index: 500;
     max-height: 100vh;
+    overflow-y: auto;
   }
   .sidebar.open { transform: translateX(0); }
 
   .preview-area {
     height: auto;
     min-height: 100vh;
-    padding: 16px 8px 80px;
+    padding: 16px 0 100px;
+    /* scroll horizontal para o A4 não encolher */
+    overflow-x: auto;
+    align-items: flex-start;
   }
 
+  /* Container mínimo = largura A4 para garantir scroll se necessário */
+  #folhas-container {
+    min-width: 826px; /* 794 + 2x16px padding */
+    padding: 0 16px;
+  }
+
+  /* A folha NUNCA distorce — dimensões A4 fixas sempre */
   .folha {
-    transform-origin: top center;
-    width: 100%;
-    max-width: 100vw;
+    width: 794px !important;
+    height: 1123px !important;
+    transform: none !important;
+    margin-left: 0 !important;
+    flex-shrink: 0;
   }
 
   .mobile-toggle { display: flex; align-items: center; gap: 6px; }
-
-  /* Scale A4 on small screens */
-  #folhas-container {
-    width: 100%;
-  }
-  .folha {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 794 / 1123;
-    transform: none;
-  }
-  :root {
-    --a4-w: 100%;
-    --a4-h: auto;
-  }
 }
 
 /* ==================== PRINT ==================== */
@@ -603,5 +602,8 @@ body { display: flex; }
     box-shadow: none;
     page-break-after: always;
     break-after: page;
+    width: 794px !important;
+    height: 1123px !important;
+    transform: none !important;
   }
 }

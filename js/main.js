@@ -330,39 +330,12 @@ function renderFolhas() {
     container.appendChild(folhaEl);
   });
 
-  // Responsividade: escalar folhas em telas pequenas
-  escalarFolhas();
 }
 
-// =============================================
-// ESCALAR FOLHAS EM TELAS PEQUENAS
-// =============================================
-function escalarFolhas() {
-  const folhas = document.querySelectorAll('.folha');
-  const previewW = document.getElementById('preview-area').clientWidth - 48;
-  const A4W = 794;
 
-  folhas.forEach(folha => {
-    if (previewW < A4W) {
-      const scale = previewW / A4W;
-      folha.style.width = '794px';
-      folha.style.height = '1123px';
-      folha.style.transform = `scale(${scale})`;
-      folha.style.transformOrigin = 'top center';
-      folha.style.marginBottom = `-${(1123 * (1 - scale))}px`;
-    } else {
-      folha.style.width = '794px';
-      folha.style.height = '1123px';
-      folha.style.transform = '';
-      folha.style.marginBottom = '';
-    }
-  });
-}
-
-window.addEventListener('resize', escalarFolhas);
 
 // =============================================
-// EXPORTAR PDF
+// EXPORTAR PDF — sempre A4 real (210x297mm)
 // =============================================
 async function exportarPDF() {
   const folhas = document.querySelectorAll('.folha');
@@ -377,37 +350,55 @@ async function exportarPDF() {
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const A4_W_MM = 210;
     const A4_H_MM = 297;
+    const A4_PX_W = 794;
+    const A4_PX_H = 1123;
 
     for (let i = 0; i < folhas.length; i++) {
       const folha = folhas[i];
 
-      // Salvar transform para renderizar em tamanho real
-      const prevTransform = folha.style.transform;
-      const prevWidth = folha.style.width;
-      const prevHeight = folha.style.height;
-      folha.style.transform = 'none';
-      folha.style.width = '794px';
-      folha.style.height = '1123px';
+      // Forçar dimensões A4 reais ANTES de capturar (independe de tela)
+      const savedStyle = {
+        width:     folha.style.width,
+        height:    folha.style.height,
+        transform: folha.style.transform,
+        position:  folha.style.position,
+        left:      folha.style.left,
+        top:       folha.style.top,
+      };
+
+      Object.assign(folha.style, {
+        width:     `${A4_PX_W}px`,
+        height:    `${A4_PX_H}px`,
+        transform: 'none',
+        position:  'fixed',
+        left:      '-9999px',
+        top:       '0px',
+      });
+
+      // Aguarda repaint
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
       const canvas = await html2canvas(folha, {
-        scale: 2,
+        scale: 2,          // 2x = alta resolução
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: 794,
-        height: 1123,
-        logging: false
+        width:  A4_PX_W,
+        height: A4_PX_H,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        logging: false,
+        imageTimeout: 15000,
       });
 
-      // Restaurar
-      folha.style.transform = prevTransform;
-      folha.style.width = prevWidth;
-      folha.style.height = prevHeight;
+      // Restaurar estilo original
+      Object.assign(folha.style, savedStyle);
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-
+      const imgData = canvas.toDataURL('image/jpeg', 0.97);
       if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, 0, A4_W_MM, A4_H_MM);
+      pdf.addImage(imgData, 'JPEG', 0, 0, A4_W_MM, A4_H_MM, undefined, 'FAST');
     }
 
     const disc = state.infoProva.disciplina || 'Prova';
@@ -415,7 +406,7 @@ async function exportarPDF() {
 
   } catch (err) {
     console.error(err);
-    alert('Erro ao gerar PDF. Verifique o console.');
+    alert('Erro ao gerar PDF: ' + err.message);
   } finally {
     btn.textContent = '⬇️ Exportar PDF';
     btn.disabled = false;
